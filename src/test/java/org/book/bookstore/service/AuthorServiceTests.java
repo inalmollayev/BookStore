@@ -16,7 +16,6 @@ import org.modelmapper.ModelMapper;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 
@@ -49,47 +48,53 @@ public class AuthorServiceTests {
 
 
     @Test
-    public void createAuthor_ReturnAuthorDto() {
-        when(mapper.map(authorDto, Author.class)).thenReturn(author);
-        when(authorRepository.save(author)).thenReturn(author);
-        when(mapper.map(author, AuthorDto.class)).thenReturn(authorDto);
-        AuthorDto result = authorService.createAuthor(authorDto);
+    public void createAuthor_returnAuthorDto(){
+        when( mapper.map(authorDto, Author.class) ).thenReturn(author);
+        when(authorRepository.save(author) ).thenReturn(author);
+        when(mapper.map(author, AuthorDto.class) ).thenReturn(authorDto);
+
         Assertions.assertNotNull(authorDto);
-        assertEquals(authorDto, result);
+        Assertions.assertEquals(authorDto, authorService.createAuthor(authorDto));
+
     }
 
     @Test
-    public void getAllAuthors_returnListAuthorDto() {
+    public void getAllAuthors_returnListAuthorDto(){
         List<Author> authors = List.of(author);
         when(authorRepository.findAll()).thenReturn(authors);
-        List<AuthorDto> authorDtos = authorService.getAllAuthor();
+        List<AuthorDto> authorDtos = authorService.getAllAuthors();
 
         Assertions.assertNotNull(authorDtos);
-        assertEquals(authorDtos.size(), authors.size());
-    }
-
-
-    @Test
-    public void getAuthorFullById(){
-        when(authorRepository.findById(author.getId())).thenReturn(Optional.ofNullable(author));
-        when(mapper.map(author, AuthorDto.class)).thenReturn(authorDto);
-        AuthorDto result = authorService.getAuthorById(author.getId());
-
-        Assertions.assertNotNull(authorDto);
-        Assertions.assertEquals(authorDto,result);
-
+        Assertions.assertEquals(authorDtos.size(), authors.size());
     }
 
     @Test
-    public void deletedAuthor(){
-        when(authorRepository.findById(author.getId())).thenReturn(Optional.ofNullable(author));
-        when(mapper.map(author, AuthorDto.class)).thenReturn(authorDto);
-        AuthorDto result = authorService.deleteAuthorById(author.getId());
+    public void getAuthorById_returnAuthorDto(){
+        Long authorId = 1L;
+        when(authorRepository.findById(authorId)).thenReturn(Optional.ofNullable(author));
+        when(mapper.map(author, AuthorDto.class) ).thenReturn(authorDto);
 
         Assertions.assertNotNull(authorDto);
-        Assertions.assertEquals(authorDto, result);
+        Assertions.assertEquals(authorDto, authorService.getAuthorById(authorId));
+
     }
 
+    @Test
+    public void deleteAuthorById_returnAuthorDto(){
+        Long authorId = 1L;
+        when(authorRepository.findById(authorId)).thenReturn(Optional.ofNullable(author));
+        when(mapper.map(author, AuthorDto.class) ).thenReturn(authorDto);
+
+        Assertions.assertNotNull(author);
+        Assertions.assertEquals(authorDto, authorService.deleteAuthorById(authorId));
+    }
+
+    @Test
+    public void updateAuthorIfNullTest(){
+        when(authorRepository.findById(1L)).thenReturn(Optional.empty());
+        AuthorDto serviceAuthorDto = authorService.updateAuthor(1L, authorDto);
+        Assertions.assertEquals(serviceAuthorDto,new AuthorDto());
+    }
 
 
 

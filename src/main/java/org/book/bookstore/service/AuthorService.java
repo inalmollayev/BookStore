@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -27,7 +28,7 @@ public class AuthorService {
     }
 
 
-    public List<AuthorDto> getAllAuthor() {
+    public List<AuthorDto> getAllAuthors() {
         List<Author> authors = authorRepository.findAll();
         List<AuthorDto> authorDtos = new ArrayList<>();
         for (Author author : authors) {
@@ -49,6 +50,18 @@ public class AuthorService {
         authorRepository.delete(author);
         log.info("Author deleted: {}", author);
         return modelMapper.map(author, AuthorDto.class);
+    }
+
+    public AuthorDto updateAuthor(Long id, AuthorDto authorDto) {
+        Optional<Author> byId = authorRepository.findById(id);
+        if (byId.isPresent()) {
+            Author author = modelMapper.map(authorDto, Author.class);
+            author.setId(id);
+            log.info("Update author {} {}", id, authorDto);
+            return modelMapper.map(authorRepository.save(author), AuthorDto.class);
+
+        }
+        return new AuthorDto();
     }
 
 

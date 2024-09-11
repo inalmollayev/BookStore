@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -27,7 +28,7 @@ public class BookService {
     public BookDto createBook(BookDto bookDto) {
         Author author = getOrAddAuthor(bookDto);
         Book book = bookRepository.findByIsbn(bookDto.getIsbn());
-        if (book == null){
+        if (book == null) {
             book = mapper.map(bookDto, Book.class);
             book.setAuthor(author);
             book = bookRepository.save(book);
@@ -35,7 +36,6 @@ public class BookService {
 
         return mapper.map(book, BookDto.class);
     }
-
 
 
     public Author getOrAddAuthor(BookDto bookDto) {
@@ -48,7 +48,7 @@ public class BookService {
         return author;
     }
 
-    public List<BookDto> getAllBooks(){
+    public List<BookDto> getAllBooks() {
         List<BookDto> bookDtos = new ArrayList<>();
         bookRepository.findAll().forEach(book -> {
             bookDtos.add(mapper.map(book, BookDto.class));
@@ -57,9 +57,13 @@ public class BookService {
         return bookDtos;
     }
 
+    public BookDto getBookById(Long id) {
+        Book book = bookRepository.findById(id).orElse(null);
+        return mapper.map(book, BookDto.class);
+    }
 
 
-    public List<BookDto> getBooksByAuthor (String author){
+    public List<BookDto> getBooksByAuthor(String author) {
         List<Book> books = bookRepository.findBookByAuthor_FullName(author);
         List<BookDto> bookDtos = new ArrayList<>();
         for (int i = 0; i < books.size(); i++) {
@@ -70,12 +74,26 @@ public class BookService {
     }
 
 
-    public BookDto deleteBook(Long id){
+    public BookDto deleteBook(Long id) {
         Book book = bookRepository.findById(id).orElse(null);
         bookRepository.delete(book);
 
         return mapper.map(book, BookDto.class);
     }
 
+    public BookDto updateBook(Long id, BookDto bookDto) {
+        Optional<Book> book = bookRepository.findById(id);
+        if (book.isPresent()) {
+            Author author = getOrAddAuthor(bookDto);
+            Book mapped = mapper.map(bookDto, Book.class);
+            mapped.setId(id);
+            mapped.setAuthor(author);
+            log.info("Update book {} {}", id, bookDto);
+            return mapper.map(bookRepository.save(mapped), BookDto.class);
+        } else {
+            log.info("Not found");
+            return new BookDto();
+        }
 
+    }
 }
